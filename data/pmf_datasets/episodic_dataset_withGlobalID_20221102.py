@@ -124,7 +124,7 @@ class EpisodeDataset_withGlobalID(data.Dataset):
         intType = torch.LongTensor
 
         # for global id
-        f = './data/filelists/Mini-ImageNet/base.json'
+        f = '/Users/DAHS/Desktop/대학원 course/고급메타러닝/StyleAdv-CDFSL/data/filelists/Mini-ImageNet/base.json'
         self.meta = json.load(open(f, 'r'))
         self.meta_path = self.meta['image_names']
         self.meta_clsID = self.meta['image_labels'] 
@@ -134,22 +134,21 @@ class EpisodeDataset_withGlobalID(data.Dataset):
         for path in self.meta_path:
             # 从绝对路径中提取相对路径部分
             # 例如: /scratch/yuqian_fu/Data/CDFSL/miniImagenet/train/n01532829/n0153282900000036.jpg
-            # 映射为: ./data/filelists/Mini-ImageNet/train/n01532829/n0153282900000036.jpg
+            # 映射为: /Users/korea/datasets/BSCD-FSL/Mini-ImageNet/train/n01532829/n0153282900000036.jpg
             if '/train/' in path:
                 relative_part = path.split('/train/')[-1]
-                mapped_path = f'./data/filelists/Mini-ImageNet/train/{relative_part}'
+                mapped_path = f'/Users/DAHS/Desktop/대학원 course/고급메타러닝/StyleAdv-CDFSL/data/filelists/Mini-ImageNet/train/{relative_part}'
             elif '/val/' in path:
                 relative_part = path.split('/val/')[-1]
-                mapped_path = f'./data/filelists/Mini-ImageNet/val/{relative_part}'
+                mapped_path = f'/Users/DAHS/Desktop/대학원 course/고급메타러닝/StyleAdv-CDFSL/data/filelists/Mini-ImageNet/val/{relative_part}'
             elif '/test/' in path:
                 relative_part = path.split('/test/')[-1]
-                mapped_path = f'./data/filelists/Mini-ImageNet/test/{relative_part}'
+                mapped_path = f'/Users/DAHS/Desktop/대학원 course/고급메타러닝/StyleAdv-CDFSL/data/filelists/Mini-ImageNet/test/{relative_part}'
             else:
                 # 如果路径格式不符合预期，保持原路径
                 mapped_path = path
             
             self.mapped_meta_path.append(mapped_path)
-        
         #print(len(self.meta_path), len(self.meta_clsID), self.meta_path[:5], self.meta_clsID[:5], self.meta_path[-5:], self.meta_clsID[-5:])
         #print('episodic_dataset:', 'inputW:', inputW, 'inputH:', inputH)
 
@@ -190,7 +189,7 @@ class EpisodeDataset_withGlobalID(data.Dataset):
 
             for j in range(self.nSupport) :
                 img = imgCls[j]
-                imgPath = os.path.join(clsPath, img)
+                imgPath = os.path.join(clsPath, img).replace('\\','/')
 
                 #align_imgPath = imgPath[:12]+'4'+imgPath[13:] 
                 #align_imgPath = imgPath.replace('/share/test', '/DATACENTER/4')
@@ -215,7 +214,7 @@ class EpisodeDataset_withGlobalID(data.Dataset):
 
             for j in range(self.nQuery) :
                 img = imgCls[j + self.nSupport]
-                imgPath = os.path.join(clsPath, img)
+                imgPath = os.path.join(clsPath, img).replace('\\','/')
 
                 #align_imgPath = imgPath[:12]+'4'+imgPath[13:]
                 #align_imgPath = imgPath.replace('/share/test', '/DATACENTER/4')              
@@ -351,4 +350,3 @@ if __name__ == '__main__' :
                                          inputH = 32)
     data = TrainEpisodeSampler[0]
     print (data[1])
-

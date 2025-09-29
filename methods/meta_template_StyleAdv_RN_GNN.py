@@ -2,7 +2,8 @@ import torch.nn as nn
 import torch
 import numpy as np
 from abc import abstractmethod
-from tensorboardX import SummaryWriter
+# from tensorboardX import SummaryWriter
+from torch.utils.tensorboard import SummaryWriter
 import torch.nn.functional as F
 from methods.tool_func import consistency_loss
 

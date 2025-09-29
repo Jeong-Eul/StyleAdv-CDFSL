@@ -35,7 +35,7 @@ FINETUNE_ALL = True
 #tune_lr = 0.0001
 tune_lr = 5e-5
 
-def load_model():
+def load_model(params):
   vit_model = load_ViTsmall()
   model = ProtoNet(vit_model)
 
@@ -54,7 +54,9 @@ def load_model():
     #pmf_pretrained_ckp = 'outputs/20221106-withoutstyleAdv_metatrain_vit_protonet_exp0_1shot/best.pth'
     
     # 1shot-update todo
-    pmf_pretrained_ckp = 'output/20230723-test-ViT/best.pth'
+    
+    # pmf_pretrained_ckp = 'output/20230723-test-ViT/best.pth'
+    pmf_pretrained_ckp = params.checkpoint
     state_pmf = torch.load(pmf_pretrained_ckp)['model']
     
     #
@@ -92,7 +94,7 @@ def set_forward_ViTProtonet(model, x):
         output = output.view(n_way*n_query,n_way)
         return output
 
-def finetune(novel_loader, n_pseudo=75, n_way=5, n_support=5):
+def finetune(params, novel_loader, n_pseudo=75, n_way=5, n_support=5):
     iter_num = len(novel_loader)
     acc_all = []
 
@@ -124,7 +126,7 @@ def finetune(novel_loader, n_pseudo=75, n_way=5, n_support=5):
         else:
             model.load_state_dict(state, strict = False)
         '''
-        model = load_model()
+        model = load_model(params)
         x = x.cuda()
         # Finetune components initialization
         xs = x[:, :n_support].reshape(-1, *x.size()[2:])  # (25, 3, 224, 224)
@@ -174,6 +176,12 @@ def finetune(novel_loader, n_pseudo=75, n_way=5, n_support=5):
     acc_mean = np.mean(acc_all)
     acc_std = np.std(acc_all)
     print('Test Acc = %4.2f +- %4.2f%%'%(acc_mean, 1.96*acc_std/np.sqrt(iter_num)))
+    save_dir = os.path.join(params.save_dir, "vit_checkpoints", str(params.n_shot))
+    os.makedirs(save_dir, exist_ok=True)
+    save_path = os.path.join(save_dir, f"{params.testset}.txt")
+    
+    with open(save_path, "a") as f:
+      f.write('Test Acc = %4.2f +- %4.2f%%\n' % (acc_mean, 1.96 * acc_std / np.sqrt(iter_num)))
 
 def run_single_testset(params):
     seed = 0
@@ -220,7 +228,7 @@ def run_single_testset(params):
         datamgr         = Chest_few_shot.SetDataManager(image_size,  n_eposide = iter_num, n_query = n_query, **few_shot_params)
         novel_loader     = datamgr.get_data_loader(aug = False )
 
-    finetune(novel_loader, n_pseudo=n_pseudo, n_way=params.test_n_way, n_support=params.n_shot)
+    finetune(params, novel_loader, n_pseudo=n_pseudo, n_way=params.test_n_way, n_support=params.n_shot)
 
 if __name__=='__main__':
     params = parse_args(script='train')
@@ -230,6 +238,6 @@ if __name__=='__main__':
     #for tmp_testset in ['EuroSAT', 'plantae']:
     #for tmp_testset in ['ISIC']:
     #for tmp_testset in ['ChestX', 'ISIC']:
-    for tmp_testset in ['EuroSAT']:
+    for tmp_testset in ['EuroSAT', 'CropDisease', 'ISIC', 'ChestX']:
       params.testset = tmp_testset
       run_single_testset(params)

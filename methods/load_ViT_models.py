@@ -27,7 +27,7 @@ def load_ViTsmall(no_pretrain=False):
       url = "dino_deitsmall16_pretrain/dino_deitsmall16_pretrain.pth"
       try:
         state_dict = torch.hub.load_state_dict_from_url(url="https://dl.fbaipublicfiles.com/dino/" + url)
-        print(f'download the pretrained weight from network')
+        # print(f'download the pretrained weight from network')
       except Exception as e:
         print(f'download the pretrained weight from network failed: {e}')
         print(f'please download the model file to: {local_path}')

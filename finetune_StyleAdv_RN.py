@@ -11,8 +11,8 @@ from methods.StyleAdv_RN_GNN import StyleAdvGNN
 from data.datamgr import SetDataManager
 from data import ISIC_few_shot, EuroSAT_few_shot, CropDisease_few_shot, Chest_few_shot
 
-#Finetune_LR = 0.001
-Finetune_LR = 0.005 
+Finetune_LR = 0.001
+# Finetune_LR = 0.005 
 #the finetuning is very sensitive to lr
 
 def finetune(novel_loader, n_pseudo=75, n_way=5, n_support=5):
@@ -32,7 +32,8 @@ def finetune(novel_loader, n_pseudo=75, n_way=5, n_support=5):
         opt = torch.optim.Adam(model.parameters(), lr = Finetune_LR)
         # Finetune process
         n_query = n_pseudo//n_way
-        pseudo_set_y = torch.from_numpy(np.repeat(range(n_way), n_query)).cuda()
+        # pseudo_set_y = torch.from_numpy(np.repeat(range(n_way), n_query)).cuda()
+        pseudo_set_y = torch.from_numpy(np.repeat(range(n_way), n_query)).long().cuda()
         model.n_query = n_query
         model.train()
         for epoch in range(params.finetune_epoch):
@@ -58,11 +59,14 @@ def finetune(novel_loader, n_pseudo=75, n_way=5, n_support=5):
         del scores, topk_labels
         torch.cuda.empty_cache()
         print('Task %d : %4.2f%%, mean Acc: %4.2f'%(ti, acc, np.mean(np.array(acc_all))))
-
+        
     acc_all = np.asarray(acc_all)
     acc_mean = np.mean(acc_all)
     acc_std = np.std(acc_all)
     print('Test Acc = %4.2f +- %4.2f%%'%(acc_mean, 1.96*acc_std/np.sqrt(iter_num)))
+    with open(f'{params.save_dir}/checkpoints/{params.resume_dir}/{params.testset}.txt', "a") as f:   
+      f.write('Test Acc = %4.2f +- %4.2f%%'%(acc_mean, 1.96*acc_std/np.sqrt(iter_num)))
+
 
 if __name__=='__main__':
     seed = 0

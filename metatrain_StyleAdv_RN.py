@@ -72,10 +72,11 @@ def record_test_result_bscdfsl(params):
   print('epoch', epoch_id, 'ChestX:', 'ISIC:', 'EuroSAT:', 'CropDisease', file = acc_file)
   name = params.name
   n_shot = params.n_shot
-  test_bestmodel_bscdfsl(acc_file, name, 'ChestX', n_shot, epoch_id)
+  
   test_bestmodel_bscdfsl(acc_file, name, 'ISIC', n_shot, epoch_id)
   test_bestmodel_bscdfsl(acc_file, name, 'EuroSAT', n_shot, epoch_id)
   test_bestmodel_bscdfsl(acc_file, name, 'CropDisease', n_shot, epoch_id)
+  test_bestmodel_bscdfsl(acc_file, name, 'ChestX', n_shot, epoch_id)
 
   acc_file.close()
   return
@@ -96,62 +97,62 @@ if __name__=='__main__':
   # parser argument
   params = parse_args('train')
 
-  # output and tensorboard dir
+  # # output and tensorboard dir
   params.tf_dir = '%s/log/%s'%(params.save_dir, params.name)
   params.checkpoint_dir = '%s/checkpoints/%s'%(params.save_dir, params.name)
   if not os.path.isdir(params.checkpoint_dir):
     os.makedirs(params.checkpoint_dir)
 
-  # dataloader
-  print('\n--- prepare dataloader ---')
-  print('  train with single seen domain {}'.format(params.dataset))
-  base_file  = os.path.join(params.data_dir, params.dataset, 'base.json')
-  val_file   = os.path.join(params.data_dir, params.dataset, 'val.json')
+  # # dataloader
+  # print('\n--- prepare dataloader ---')
+  # print('  train with single seen domain {}'.format(params.dataset))
+  # base_file  = os.path.join(params.data_dir, params.dataset, 'base.json')
+  # val_file   = os.path.join(params.data_dir, params.dataset, 'val.json')
 
-  # model
-  print('\n--- build model ---')
-  image_size = 224
+  # # model
+  # print('\n--- build model ---')
+  # image_size = 224
   
-  #if test_n_way is smaller than train_n_way, reduce n_query to keep batch size small
-  n_query = max(1, int(16* params.test_n_way/params.train_n_way))
+  # #if test_n_way is smaller than train_n_way, reduce n_query to keep batch size small
+  # n_query = max(1, int(16* params.test_n_way/params.train_n_way))
 
-  train_few_shot_params    = dict(n_way = params.train_n_way, n_support = params.n_shot)
-  base_datamgr            = SetDataManager(image_size, n_query = n_query,  **train_few_shot_params)
-  base_loader             = base_datamgr.get_data_loader( base_file , aug = params.train_aug )
+  # train_few_shot_params    = dict(n_way = params.train_n_way, n_support = params.n_shot)
+  # base_datamgr            = SetDataManager(image_size, n_query = n_query,  **train_few_shot_params)
+  # base_loader             = base_datamgr.get_data_loader( base_file , aug = params.train_aug )
 
-  test_few_shot_params     = dict(n_way = params.test_n_way, n_support = params.n_shot)
-  val_datamgr             = SetDataManager(image_size, n_query = n_query, **test_few_shot_params)
-  val_loader              = val_datamgr.get_data_loader( val_file, aug = False)
+  # test_few_shot_params     = dict(n_way = params.test_n_way, n_support = params.n_shot)
+  # val_datamgr             = SetDataManager(image_size, n_query = n_query, **test_few_shot_params)
+  # val_loader              = val_datamgr.get_data_loader( val_file, aug = False)
 
-  model           = StyleAdvGNN( model_dict[params.model], tf_path=params.tf_dir, **train_few_shot_params)
-  model = model.cuda()
+  # model           = StyleAdvGNN( model_dict[params.model], tf_path=params.tf_dir, **train_few_shot_params)
+  # model = model.cuda()
 
-  # load model
-  start_epoch = params.start_epoch
-  stop_epoch = params.stop_epoch
-  if params.resume != '':
-    resume_file = get_resume_file('%s/checkpoints/%s'%(params.save_dir, params.resume), params.resume_epoch)
-    if resume_file is not None:
-      tmp = torch.load(resume_file)
-      start_epoch = tmp['epoch']+1
-      model.load_state_dict(tmp['state'])
-      print('  resume the training with at {} epoch (model file {})'.format(start_epoch, params.resume))
-  else:
-    if params.warmup == 'gg3b0':
-      raise Exception('Must provide the pre-trained feature encoder file using --warmup option!')
-    state = load_warmup_state('%s/checkpoints/%s'%(params.save_dir, params.warmup))
-    model.feature.load_state_dict(state, strict=False)
+  # # load model
+  # start_epoch = params.start_epoch
+  # stop_epoch = params.stop_epoch
+  # if params.resume != '':
+  #   resume_file = get_resume_file('%s/checkpoints/%s'%(params.save_dir, params.resume), params.resume_epoch)
+  #   if resume_file is not None:
+  #     tmp = torch.load(resume_file)
+  #     start_epoch = tmp['epoch']+1
+  #     model.load_state_dict(tmp['state'])
+  #     print('  resume the training with at {} epoch (model file {})'.format(start_epoch, params.resume))
+  # else:
+  #   if params.warmup == 'gg3b0':
+  #     raise Exception('Must provide the pre-trained feature encoder file using --warmup option!')
+  #   state = load_warmup_state('%s/checkpoints/%s'%(params.save_dir, params.warmup))
+  #   model.feature.load_state_dict(state, strict=False)
 
-  import time
-  start =time.clock()
-  # training
-  print('\n--- start the training ---')
-  model = train(base_loader, val_loader, model, start_epoch, stop_epoch, params)
-  end=time.clock()
-  print('Running time: %s Seconds: %s Min: %s Min per epoch'%(end-start, (end-start)/60, (end-start)/60/params.stop_epoch))
+  # import time
+  # start =time.clock()
+  # # training
+  # print('\n--- start the training ---')
+  # model = train(base_loader, val_loader, model, start_epoch, stop_epoch, params)
+  # end=time.clock()
+  # print('Running time: %s Seconds: %s Min: %s Min per epoch'%(end-start, (end-start)/60, (end-start)/60/params.stop_epoch))
 
   # testing
-  record_test_result(params)
+  # record_test_result(params)
   # testing bscdfsl
   record_test_result_bscdfsl(params)
 

@@ -44,6 +44,7 @@ class ProtoNet(nn.Module):
         supp_f =  self.backbone.forward_rest(supp_f)
         '''
         supp_f = supp_f.view(B, nSupp, -1)
+        supp_y = supp_y.long()
         supp_y_1hot = F.one_hot(supp_y, num_classes).transpose(1, 2) # B, nC, nSupp
 
         # B, nC, nSupp x B, nSupp, d = B, nC, d

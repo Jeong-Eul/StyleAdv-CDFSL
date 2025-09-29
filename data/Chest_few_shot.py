@@ -9,7 +9,8 @@ import torchvision.transforms as transforms
 import data.additional_transforms as add_transforms
 from torch.utils.data import Dataset, DataLoader
 from abc import abstractmethod
-
+from glob import glob
+import os
 from PIL import ImageFile
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
@@ -77,9 +78,26 @@ class CustomDatasetFromImages(Dataset):
         single_image_label = self.labels[index]
 
         return (img_as_img, single_image_label)
+    
+    # def __getitem__(self, index):
+    #     # Get image name from the pandas df
+    #     single_image_name = self.image_name[index]
 
-    def __len__(self):
-        return self.data_len
+    #     # Match pattern: ./data/filelists/ChestX-Ray8/data/images_*/images/<파일명>
+    #     full_path = glob(os.path.join('./data/filelists/ChestX-Ray8/data', 'images_*', 'images', single_image_name))
+
+    #     if len(full_path) == 0:
+    #         raise FileNotFoundError(f"{single_image_name} not found under ./data/filelists/ChestX-Ray8/data/images_*/images/")
+        
+    #     img_as_img = Image.open(full_path[0]).resize((256, 256)).convert('RGB')
+    #     img_as_img.load()
+
+    #     single_image_label = self.labels[index]
+
+    #     return (img_as_img, single_image_label)
+
+    # def __len__(self):
+    #     return self.data_len
 
 
 identity = lambda x:x
@@ -228,7 +246,7 @@ class SimpleDataManager(DataManager):
         transform = self.trans_loader.get_composed_transform(aug)
         dataset = SimpleDataset(transform)
 
-        data_loader_params = dict(batch_size = self.batch_size, shuffle = True, num_workers = 12, pin_memory = True)       
+        data_loader_params = dict(batch_size = self.batch_size, shuffle = True, num_workers = 0, pin_memory = True)       
         data_loader = torch.utils.data.DataLoader(dataset, **data_loader_params)
 
         return data_loader
@@ -247,7 +265,7 @@ class SetDataManager(DataManager):
         transform = self.trans_loader.get_composed_transform(aug)
         dataset = SetDataset(self.batch_size, transform)
         sampler = EpisodicBatchSampler(len(dataset), self.n_way, self.n_eposide )  
-        data_loader_params = dict(batch_sampler = sampler,  num_workers = 12, pin_memory = True)       
+        data_loader_params = dict(batch_sampler = sampler,  num_workers = 0, pin_memory = True)       
         data_loader = torch.utils.data.DataLoader(dataset, **data_loader_params)
         return data_loader
 

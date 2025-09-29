@@ -27,13 +27,13 @@ def dataset_setting(nSupport, img_size=80):
 
     inputW, inputH, nbCls = img_size, img_size, 64
 
-    trainDir = './data/filelists/Mini-ImageNet/train/'
+    trainDir = '/Users/DAHS/Desktop/대학원 course/고급메타러닝/StyleAdv-CDFSL/data/filelists/Mini-ImageNet/train/'
     #trainDir = '/share/test/lovelyqian/CROSS-DOMAIN-FSL-DATASETS/miniImagenet/source/mini_imagenet_full_size/train/'
-    valDir = './data/filelists/Mini-ImageNet/val/'
+    valDir = '/Users/DAHS/Desktop/대학원 course/고급메타러닝/StyleAdv-CDFSL/data/filelists/Mini-ImageNet/val/'
     #valDir = '/share/test/lovelyqian/CROSS-DOMAIN-FSL-DATASETS/miniImagenet/source/mini_imagenet_full_size/val/'
-    testDir = './data/filelists/Mini-ImageNet/test/'
+    testDir = '/Users/DAHS/Desktop/대학원 course/고급메타러닝/StyleAdv-CDFSL/data/filelists/Mini-ImageNet/test/'
     #testDir = '/share/test/lovelyqian/CROSS-DOMAIN-FSL-DATASETS/miniImagenet/source/mini_imagenet_full_size/test/'
-    episodeJson = './data/filelists/Mini-ImageNet/val1000Episode_5_way_1_shot.json' if nSupport == 1 \
-            else './data/filelists/Mini-ImageNet/val1000Episode_5_way_5_shot.json'
+    episodeJson = '/Users/DAHS/Desktop/대학원 course/고급메타러닝/StyleAdv-CDFSL/data/filelists/Mini-ImageNet/val1000Episode_5_way_1_shot.json' if nSupport == 1 \
+            else '/Users/DAHS/Desktop/대학원 course/고급메타러닝/StyleAdv-CDFSL/data/filelists/Mini-ImageNet/val1000Episode_5_way_5_shot.json'
 
     return trainTransform, valTransform, inputW, inputH, trainDir, valDir, testDir, episodeJson, nbCls
