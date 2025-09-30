@@ -28,6 +28,30 @@ def fgsm_attack(init_input, epsilon, data_grad):
     adv_input = init_input + epsilon*sign_data_grad
     return adv_input
 
+def fgsm_attack_scaled(init_input, epsilon, data_grad):
+    # random start init_input
+    init_input = init_input + torch.empty_like(init_input).uniform_(START_EPS, START_EPS)
+
+    mean_abs = data_grad.abs().mean(dim=tuple(range(1, data_grad.dim())), keepdim=True)
+    scale = mean_abs / (mean_abs + 1.0)  # in (0,1)
+    transformed = data_grad.sign() * scale
+    
+    adv_input = init_input + epsilon*transformed
+    return adv_input
+
+# def fgsm_attack(init_input, epsilon, data_grad, learnable_fn=None):
+#     init_input = init_input + torch.empty_like(init_input).uniform_(START_EPS, START_EPS)
+
+#     if learnable_fn is None:
+#         # Base model-> sign
+#         transformed_grad = data_grad.sign()
+#     else:
+#         # leanable model -> aditional CNN layer
+#         transformed_grad = learnable_fn(data_grad)
+
+#     adv_input = init_input + epsilon * transformed_grad
+#     return adv_input
+
 def changeNewAdvStyle(input_fea, new_styleAug_mean, new_styleAug_std, p_thred):
     if(new_styleAug_mean=='None'):
         return input_fea

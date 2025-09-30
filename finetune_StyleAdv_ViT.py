@@ -140,6 +140,7 @@ def finetune(params, novel_loader, n_pseudo=75, n_way=5, n_support=5):
         # Finetune process
         n_query = n_pseudo//n_way
         pseudo_set_y = torch.from_numpy(np.repeat(range(n_way), n_query)).cuda()
+        pseudo_set_y = pseudo_set_y.long()
         model.n_query = n_query
         model.train()
         for epoch in range(params.finetune_epoch):

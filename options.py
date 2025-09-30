@@ -18,7 +18,7 @@ def parse_args(script):
   parser.add_argument('--save_dir'    , default='./output', type=str, help='')
   parser.add_argument('--checkpoint'    , default='./output', type=str, help='')
   #parser.add_argument('--data_dir'    , default='./filelists', type=str, help='')
-  parser.add_argument('--data_dir'    , default='/share/test/lovelyqian/CROSS-DOMAIN-FSL-DATASETS', type=str, help='')
+  parser.add_argument('--data_dir'    , default='./data/filelists', type=str, help='')
 
   # for finetuning
   parser.add_argument('--finetune_epoch', default=50, type=int, help='')
@@ -62,7 +62,7 @@ def get_resume_file(checkpoint_dir, resume_epoch=-1):
   return resume_file
 
 def get_best_file(checkpoint_dir):
-  best_file = os.path.join(checkpoint_dir, 'best_model.tar')
+  best_file = os.path.join(checkpoint_dir, 'best_model_v2.tar')
   if os.path.isfile(best_file):
     return best_file
   else:

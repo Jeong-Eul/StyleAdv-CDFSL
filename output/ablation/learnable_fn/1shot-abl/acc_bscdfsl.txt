@@ -1,0 +1,5 @@
+epoch -1 ChestX: ISIC: EuroSAT: CropDisease
+  1000 test iterations: Acc = 32.23% +- 0.55%
+  1000 test iterations: Acc = 66.74% +- 0.81%
+  1000 test iterations: Acc = 64.58% +- 0.80%
+  1000 test iterations: Acc = 22.66% +- 0.34%

@@ -18,6 +18,8 @@ class MetaTemplate(nn.Module):
     self.feat_dim   = self.feature.final_feat_dim
     self.change_way = change_way  #some methods allow different_way classification during training and test
     self.tf_writer = SummaryWriter(log_dir=tf_path) if tf_path is not None else None
+    self.eps_min = 0.3
+    self.eps_max = 0.8
 
   @abstractmethod
   def set_forward(self,x,is_feature):
@@ -52,9 +54,12 @@ class MetaTemplate(nn.Module):
     topk_ind = topk_labels.cpu().numpy()
     top1_correct = np.sum(topk_ind[:,0] == y_query)
     return float(top1_correct), len(y_query), loss.item()*len(y_query)
+  
 
+  def get_sched_epsilon(self, epoch, max_epoch):
+        return self.eps_min + 0.5*(self.eps_max - self.eps_min) * (1-np.cos(np.pi*epoch/max_epoch))
 
-  def train_loop(self, epoch, train_loader_ori,  optimizer, total_it):
+  def train_loop(self, epoch, train_loader_ori,  optimizer, total_it, max_epoch):
     print_freq = len(train_loader_ori) // 10
     avg_loss=0
     for i, (x_ori, global_y ) in enumerate(train_loader_ori):
@@ -64,6 +69,9 @@ class MetaTemplate(nn.Module):
       optimizer.zero_grad()
 
       epsilon_list = [0.8, 0.08, 0.008]
+      
+      # eps0 = self.get_sched_epsilon(epoch, max_epoch)
+      # epsilon_list = [eps0, eps0*0.1, eps0*0.01]
 
       scores_fsl_ori, loss_fsl_ori, scores_cls_ori, loss_cls_ori, scores_fsl_adv, loss_fsl_adv, scores_cls_adv, loss_cls_adv = self.set_forward_loss_StyAdv(x_ori, global_y, epsilon_list)
 

@@ -151,7 +151,10 @@ class SubDataset:
     image_path = os.path.join( self.sub_meta[i])
     #print(image_path)
     #image_path = image_path[:12]+'2'+image_path[13:] 
-    image_path = image_path.replace('DATACENTER/4', 'share/test')
+    # image_path = image_path.replace('DATACENTER/4', 'share/test')
+    image_path = image_path.replace("/scratch/yuqian_fu/Data/CDFSL/miniImagenet",
+                                    "C:/Users/DAHS/Desktop/대학원 course/고급메타러닝/StyleAdv-CDFSL/data/filelists/Mini-ImageNet")
+
 
     img = Image.open(image_path).convert('RGB')
     img = self.transform(img)

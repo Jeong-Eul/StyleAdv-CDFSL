@@ -182,6 +182,16 @@ def test_bestmodel_bscdfsl(acc_file, name, dataset,n_shot, save_epoch=-1):
   print('  %d test iterations: Acc = %4.2f%% +- %4.2f%%' %(iter_num, acc_mean, 1.96* acc_std/np.sqrt(iter_num)))
   print('  %d test iterations: Acc = %4.2f%% +- %4.2f%%' %(iter_num, acc_mean, 1.96* acc_std/np.sqrt(iter_num)), file = acc_file)
 
+  save_path = f"/Users/DAHS/Desktop/대학원 course/고급메타러닝/StyleAdv-CDFSL/output/ablation/{params.n_shot}/{params.dataset}.txt"
+  os.makedirs(os.path.dirname(save_path), exist_ok=True)
+
+  with open(save_path, "a") as f:
+      f.write("  %d test iterations: Acc = %4.2f%% +- %4.2f%%\n" 
+              % (iter_num, acc_mean, 1.96 * acc_std / np.sqrt(iter_num)))
+
+  print("  %d test iterations: Acc = %4.2f%% +- %4.2f%%" 
+        % (iter_num, acc_mean, 1.96 * acc_std / np.sqrt(iter_num)))
+  
   # remove feature files [optional]
   if remove_featurefile:
     os.remove(featurefile)

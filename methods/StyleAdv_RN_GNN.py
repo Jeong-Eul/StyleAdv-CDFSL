@@ -35,6 +35,12 @@ class StyleAdvGNN(MetaTemplate):
     
     support_label = torch.cat([support_label, torch.zeros(self.n_way, 1, n_way)], dim=1)
     self.support_label = support_label.view(1, -1, self.n_way)
+    
+    # self.learnable_fn_block1 = nn.Conv2d(64, 64, kernel_size=1, groups=64)
+    # self.learnable_fn_block2 = nn.Conv2d(128, 128, kernel_size=1, groups=128)
+    # self.learnable_fn_block3 = nn.Conv2d(256, 256, kernel_size=1, groups=256)
+
+    
 
   def cuda(self):
     self.feature.cuda()
@@ -42,6 +48,10 @@ class StyleAdvGNN(MetaTemplate):
     self.gnn.cuda()
     self.classifier.cuda()
     self.support_label = self.support_label.cuda()
+    # self.learnable_fn_block1.cuda()
+    # self.learnable_fn_block2.cuda()
+    # self.learnable_fn_block3.cuda()
+
     return self
 
   def set_forward(self,x,is_feature=False):
@@ -78,7 +88,7 @@ class StyleAdvGNN(MetaTemplate):
 
   def set_forward_loss(self, x):
     y_query = torch.from_numpy(np.repeat(range( self.n_way ), self.n_query))
-    y_query = y_query.cuda()
+    y_query = y_query.cuda().long()
     scores = self.set_forward(x)
     loss = self.loss_fn(scores, y_query)
     return scores, loss
@@ -129,19 +139,28 @@ class StyleAdvGNN(MetaTemplate):
       self.feature.zero_grad()
       self.classifier.zero_grad()
    
-      # backward loss
+      # # backward loss
       ori_loss.backward()
 
       # collect datagrad
       grad_ori_style_mean_block1 = ori_style_mean_block1.grad.detach()
       grad_ori_style_std_block1 = ori_style_std_block1.grad.detach()
+      
+      # 수정
+      # grads = torch.autograd.grad(
+      #         outputs=ori_loss,
+      #         inputs=[ori_style_mean_block1, ori_style_std_block1],
+      #         retain_graph=True,
+      #         create_graph=True
+      #     )
+      # grad_ori_style_mean_block1, grad_ori_style_std_block1 = grads
     
       # fgsm style attack
       index = torch.randint(0, len(epsilon_list), (1, ))[0]
       epsilon = epsilon_list[index]
 
-      adv_style_mean_block1 = fgsm_attack(ori_style_mean_block1, epsilon, grad_ori_style_mean_block1)
-      adv_style_std_block1 = fgsm_attack(ori_style_std_block1, epsilon, grad_ori_style_std_block1)
+      adv_style_mean_block1 = fgsm_attack_scaled(ori_style_mean_block1, epsilon, grad_ori_style_mean_block1)
+      adv_style_std_block1 = fgsm_attack_scaled(ori_style_std_block1, epsilon, grad_ori_style_std_block1)
 
     # add zero_grad
     self.feature.zero_grad()
@@ -177,16 +196,28 @@ class StyleAdvGNN(MetaTemplate):
       # zero all the existing gradients
       self.feature.zero_grad()
       self.classifier.zero_grad()
-      # backward loss
+      # # backward loss
       ori_loss.backward()
       # collect datagrad
       grad_ori_style_mean_block2 = ori_style_mean_block2.grad.detach()
       grad_ori_style_std_block2 = ori_style_std_block2.grad.detach()
+      
+      # 수정
+      
+      # 수정
+      # grads = torch.autograd.grad(
+      #         outputs=ori_loss,
+      #         inputs=[ori_style_mean_block2, ori_style_std_block2],
+      #         retain_graph=True,
+      #         create_graph=True
+      #     )
+      # grad_ori_style_mean_block2, grad_ori_style_std_block2 = grads
+      
       # fgsm style attack
       index = torch.randint(0, len(epsilon_list), (1, ))[0]
       epsilon = epsilon_list[index]
-      adv_style_mean_block2 = fgsm_attack(ori_style_mean_block2, epsilon, grad_ori_style_mean_block2)
-      adv_style_std_block2 = fgsm_attack(ori_style_std_block2, epsilon, grad_ori_style_std_block2)
+      adv_style_mean_block2 = fgsm_attack_scaled(ori_style_mean_block2, epsilon, grad_ori_style_mean_block2)
+      adv_style_std_block2 = fgsm_attack_scaled(ori_style_std_block2, epsilon, grad_ori_style_std_block2)
 
     # add zero_grad
     self.feature.zero_grad()
@@ -226,11 +257,22 @@ class StyleAdvGNN(MetaTemplate):
       # collect datagrad
       grad_ori_style_mean_block3 = ori_style_mean_block3.grad.detach()
       grad_ori_style_std_block3 = ori_style_std_block3.grad.detach()
+      
+      # # 수정
+      
+      # grads = torch.autograd.grad(
+      #         outputs=ori_loss,
+      #         inputs=[ori_style_mean_block3, ori_style_std_block3],
+      #         retain_graph=True,
+      #         create_graph=True
+      #     )
+      # grad_ori_style_mean_block3, grad_ori_style_std_block3 = grads
+      
       # fgsm style attack
       index = torch.randint(0, len(epsilon_list), (1, ))[0]
       epsilon = epsilon_list[index]
-      adv_style_mean_block3 = fgsm_attack(ori_style_mean_block3, epsilon, grad_ori_style_mean_block3)
-      adv_style_std_block3 = fgsm_attack(ori_style_std_block3, epsilon, grad_ori_style_std_block3)
+      adv_style_mean_block3 = fgsm_attack_scaled(ori_style_mean_block3, epsilon, grad_ori_style_mean_block3)
+      adv_style_std_block3 = fgsm_attack_scaled(ori_style_std_block3, epsilon, grad_ori_style_std_block3)
 
     return adv_style_mean_block1, adv_style_std_block1, adv_style_mean_block2, adv_style_std_block2, adv_style_mean_block3, adv_style_std_block3 
     
@@ -259,7 +301,7 @@ class StyleAdvGNN(MetaTemplate):
     self.set_statues_of_modules('eval') 
 
     adv_style_mean_block1, adv_style_std_block1, adv_style_mean_block2, adv_style_std_block2, adv_style_mean_block3, adv_style_std_block3 = self.adversarial_attack_Incre(x_ori, global_y, epsilon_list)
- 
+    # print(adv_style_mean_block1.shape)
     self.feature.zero_grad()
     self.fc.zero_grad()
     self.classifier.zero_grad()
@@ -271,7 +313,7 @@ class StyleAdvGNN(MetaTemplate):
 
     # define y_query for FSL
     y_query = torch.from_numpy(np.repeat(range( self.n_way ), self.n_query))
-    y_query = y_query.cuda()
+    y_query = y_query.long().cuda()
 
     # forward x_ori 
     x_ori = x_ori.cuda()
